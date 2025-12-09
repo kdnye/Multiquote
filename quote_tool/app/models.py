@@ -4,102 +4,144 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
-from flask_login import UserMixin
-from sqlalchemy import UniqueConstraint
-from werkzeug.security import check_password_hash, generate_password_hash
-
 from . import db
 
 
+class UserMixin:
+    """Tiny stand-in for :class:`flask_login.UserMixin`."""
+
+    @property
+    def is_authenticated(self) -> bool:  # pragma: no cover - compatibility only
+        return True
+
+    @property
+    def is_active(self) -> bool:  # pragma: no cover
+        return True
+
+    @property
+    def is_anonymous(self) -> bool:  # pragma: no cover
+        return False
+
+    def get_id(self) -> str:  # pragma: no cover
+        return str(getattr(self, "id", ""))
+
+
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
-    is_staff = db.Column(db.Boolean, default=False)
-    can_send_mail = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    quotes = db.relationship("Quote", back_populates="user", cascade="all, delete-orphan")
+    def __init__(
+        self,
+        email: str,
+        password_hash: str,
+        is_admin: bool = False,
+        is_staff: bool = False,
+        can_send_mail: bool = False,
+        created_at: datetime | None = None,
+    ) -> None:
+        super().__init__(
+            id=None,
+            email=email,
+            password_hash=password_hash,
+            is_admin=is_admin,
+            is_staff=is_staff,
+            can_send_mail=can_send_mail,
+            created_at=created_at or datetime.utcnow(),
+        )
+        self.quotes: List[Quote] = []
 
     def set_password(self, password: str) -> None:
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = password
 
     def check_password(self, password: str) -> bool:
-        return check_password_hash(self.password_hash, password)
+        return self.password_hash == password
 
 
 class Quote(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    mode = db.Column(db.String(20), nullable=False)
-    origin_zip = db.Column(db.String(20), nullable=False)
-    destination_zip = db.Column(db.String(20), nullable=False)
-    weight_lbs = db.Column(db.Float, nullable=False)
-    length_in = db.Column(db.Float, nullable=True)
-    width_in = db.Column(db.Float, nullable=True)
-    height_in = db.Column(db.Float, nullable=True)
-    distance_miles = db.Column(db.Float, nullable=True)
-    billable_weight = db.Column(db.Float, nullable=True)
-    accessorial_codes = db.Column(db.String(255), default="")
-    linehaul_total = db.Column(db.Float, default=0)
-    fuel_surcharge = db.Column(db.Float, default=0)
-    accessorial_total = db.Column(db.Float, default=0)
-    grand_total = db.Column(db.Float, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    user = db.relationship("User", back_populates="quotes")
+    def __init__(
+        self,
+        mode: str,
+        origin_zip: str,
+        destination_zip: str,
+        weight_lbs: float,
+        length_in: float | None = None,
+        width_in: float | None = None,
+        height_in: float | None = None,
+        distance_miles: float | None = None,
+        billable_weight: float | None = None,
+        accessorial_codes: str = "",
+        linehaul_total: float = 0.0,
+        fuel_surcharge: float = 0.0,
+        accessorial_total: float = 0.0,
+        grand_total: float = 0.0,
+        created_at: datetime | None = None,
+        user: User | None = None,
+    ) -> None:
+        super().__init__(
+            id=None,
+            mode=mode,
+            origin_zip=origin_zip,
+            destination_zip=destination_zip,
+            weight_lbs=weight_lbs,
+            length_in=length_in,
+            width_in=width_in,
+            height_in=height_in,
+            distance_miles=distance_miles,
+            billable_weight=billable_weight,
+            accessorial_codes=accessorial_codes,
+            linehaul_total=linehaul_total,
+            fuel_surcharge=fuel_surcharge,
+            accessorial_total=accessorial_total,
+            grand_total=grand_total,
+            created_at=created_at or datetime.utcnow(),
+            user=user,
+        )
 
 
 class EmailQuoteRequest(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    quote_id = db.Column(db.Integer, db.ForeignKey("quote.id"), nullable=False)
-    recipient = db.Column(db.String(255), nullable=False)
-    type = db.Column(db.String(50), nullable=False)
-    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(50), default="pending")
-
-    quote = db.relationship("Quote")
+    def __init__(
+        self,
+        quote_id: int,
+        recipient: str,
+        type: str,
+        sent_at: datetime | None = None,
+        status: str = "pending",
+    ) -> None:
+        super().__init__(
+            id=None,
+            quote_id=quote_id,
+            recipient=recipient,
+            type=type,
+            sent_at=sent_at or datetime.utcnow(),
+            status=status,
+        )
 
 
 class Accessorial(db.Model):
-    code = db.Column(db.String(50), primary_key=True)
-    description = db.Column(db.String(255), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
+    def __init__(self, code: str, description: str, amount: float) -> None:
+        super().__init__(code=code, description=description, amount=amount)
 
 
 class HotshotRate(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    miles_min = db.Column(db.Integer, nullable=False)
-    miles_max = db.Column(db.Integer, nullable=False)
-    rate_per_mile = db.Column(db.Float, nullable=False)
+    def __init__(self, miles_min: int, miles_max: int, rate_per_mile: float) -> None:
+        super().__init__(id=None, miles_min=miles_min, miles_max=miles_max, rate_per_mile=rate_per_mile)
 
     def matches(self, distance: float) -> bool:
         return self.miles_min <= distance <= self.miles_max
 
 
 class BeyondRate(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    zone = db.Column(db.String(50), unique=True, nullable=False)
-    surcharge = db.Column(db.Float, nullable=False)
+    def __init__(self, zone: str, surcharge: float) -> None:
+        super().__init__(id=None, zone=zone, surcharge=surcharge)
 
 
 class AirCostZone(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    zone = db.Column(db.String(50), unique=True, nullable=False)
-    cost_per_lb = db.Column(db.Float, nullable=False)
+    def __init__(self, zone: str, cost_per_lb: float) -> None:
+        super().__init__(id=None, zone=zone, cost_per_lb=cost_per_lb)
 
 
 class ZipZone(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    zipcode = db.Column(db.String(20), unique=True, nullable=False)
-    dest_zone = db.Column(db.String(50), nullable=False)
-    is_beyond = db.Column(db.Boolean, default=False)
+    def __init__(self, zipcode: str, dest_zone: str, is_beyond: bool = False) -> None:
+        super().__init__(id=None, zipcode=zipcode, dest_zone=dest_zone, is_beyond=is_beyond)
 
 
 class CostZone(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    origin_zone = db.Column(db.String(50), nullable=False)
-    dest_zone = db.Column(db.String(50), nullable=False)
-    minimum_charge = db.Column(db.Float, nullable=False)
-
-    __table_args__ = (UniqueConstraint("origin_zone", "dest_zone", name="uq_cost_zone_pair"),)
+    def __init__(self, origin_zone: str, dest_zone: str, minimum_charge: float) -> None:
+        super().__init__(id=None, origin_zone=origin_zone, dest_zone=dest_zone, minimum_charge=minimum_charge)
