@@ -27,7 +27,7 @@ Services portal.
 | Quote summary emailer | 🔒 Staff-only | Enabled for Freight Services staff only. Requires SMTP credentials and mail privileges. |
 | Redis caching | ⚙️ Optional | Enabled by default when using `startup_detached.sh`. Remove `cache` from `COMPOSE_PROFILES` if you want to skip Redis or point to an external instance. |
 | Duplicati backups | ⚙️ Optional | Disabled by default. Start with `docker compose --profile backup up -d duplicati`. |
-| BigQuery storage backend | 🧪 Optional | Supported via `BIGQUERY_*` environment variables; production currently standardizes on PostgreSQL. |
+
 
 ## Documentation hub
 
