@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Quote history</h1>
+<table class="table">
+  <thead><tr><th>ID</th><th>Mode</th><th>Total</th><th>Date</th></tr></thead>
+  <tbody>
+  {% for quote in quotes %}
+    <tr><td>{{ quote.id }}</td><td>{{ quote.mode }}</td><td>${{ quote.grand_total }}</td><td>{{ quote.created_at }}</td></tr>
+  {% else %}
+    <tr><td colspan="4">No quotes yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Create Quote</h1>
+<form method="post">
+  {{ form.hidden_tag() }}
+  <div class="mb-3">{{ form.mode.label }} {{ form.mode(class_='form-select') }}</div>
+  <div class="mb-3">{{ form.origin_zip.label }} {{ form.origin_zip(class_='form-control') }}</div>
+  <div class="mb-3">{{ form.destination_zip.label }} {{ form.destination_zip(class_='form-control') }}</div>
+  <div class="mb-3">{{ form.weight_lbs.label }} {{ form.weight_lbs(class_='form-control') }}</div>
+  <div class="mb-3">{{ form.length_in.label }} {{ form.length_in(class_='form-control') }}</div>
+  <div class="mb-3">{{ form.width_in.label }} {{ form.width_in(class_='form-control') }}</div>
+  <div class="mb-3">{{ form.height_in.label }} {{ form.height_in(class_='form-control') }}</div>
+  <div class="mb-3">{{ form.accessorials.label }} {{ form.accessorials(class_='form-control') }}</div>
+  {{ form.submit(class_='btn btn-success') }}
+</form>
+
+{% if quote %}
+<div class="alert alert-info mt-4">
+  <h4>Quote saved</h4>
+  <p>Total: ${{ quote.grand_total }}</p>
+</div>
+{% endif %}
+
+<h3 class="mt-5">Available Accessorials</h3>
+<ul>
+  {% for item in accessorials %}
+    <li><strong>{{ item.code }}</strong> - {{ item.description }} (${{ item.amount }})</li>
+  {% else %}
+    <li>No accessorials configured.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

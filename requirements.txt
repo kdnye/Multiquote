@@ -1,0 +1,10 @@
+Flask>=2.2
+Flask-SQLAlchemy>=3.0
+Flask-WTF>=1.1
+WTForms>=3.0
+Flask-Login>=0.6
+Flask-Limiter>=3.3
+itsdangerous>=2.1
+requests>=2.31
+pytest>=7.0
+python-dotenv>=1.0
