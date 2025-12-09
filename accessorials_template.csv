@@ -1,0 +1,8 @@
+Name,Amount,Is Percentage
+Less than 4 hrs,95.0,FALSE
+After Hours,110.0,FALSE
+Weekend,125.0,FALSE
+Two Man,125.0,FALSE
+Liftgate,75.0,FALSE
+Guarantee,0.25,TRUE
+4hr Window,50.0,FALSE
