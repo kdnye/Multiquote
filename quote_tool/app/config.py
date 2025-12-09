@@ -5,7 +5,11 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from dotenv import load_dotenv
+try:  # Optional dependency; tests run without loading from .env
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - fallback for environments without python-dotenv
+    def load_dotenv(*_args, **_kwargs):
+        return False
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
@@ -27,6 +31,15 @@ class Config:
     RATELIMIT_LOGIN = "5 per minute"
     RATELIMIT_RESET = "5 per minute"
     RATELIMIT_TOKEN = "1 per 15 minute"
+
+    @classmethod
+    def as_dict(cls) -> dict:
+        """Return config values as a plain dictionary."""
+        return {
+            key: value
+            for key, value in cls.__dict__.items()
+            if key.isupper() and not key.startswith("__")
+        }
 
 
 class TestConfig(Config):

@@ -4,8 +4,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable, Sequence
 
-from flask import current_app
-
 from .. import db
 from ..models import Accessorial, AirCostZone, BeyondRate, CostZone, HotshotRate, Quote, User, ZipZone
 
@@ -32,8 +30,15 @@ def guarantee_cost(minimum_charge: float, computed: float) -> float:
     return max(minimum_charge, round(computed, 2))
 
 
+def _find_hotshot_rate(distance_miles: float) -> HotshotRate | None:
+    for rate in HotshotRate.query.all():
+        if rate.matches(distance_miles):
+            return rate
+    return None
+
+
 def hotshot_quote(distance_miles: float, weight_lbs: float, beyond_zone: str | None) -> float:
-    rate = HotshotRate.query.filter(HotshotRate.miles_min <= distance_miles, HotshotRate.miles_max >= distance_miles).first()
+    rate = _find_hotshot_rate(distance_miles)
     if not rate:
         raise ValueError("No hotshot rate available for distance")
     linehaul = distance_miles * rate.rate_per_mile
@@ -56,6 +61,10 @@ def air_quote(origin_zip: str, dest_zip: str, billable_lbs: float) -> float:
         raise ValueError("Missing zone mapping for ZIP")
 
     cost_zone = CostZone.query.filter_by(origin_zone=origin_zone.dest_zone, dest_zone=dest_zone.dest_zone).first()
+    matched_dest_zone = cost_zone is not None
+    if not cost_zone and dest_zone.is_beyond:
+        # Fallback to the base destination zone when beyond charges are handled separately.
+        cost_zone = CostZone.query.filter_by(origin_zone=origin_zone.dest_zone, dest_zone=origin_zone.dest_zone).first()
     if not cost_zone:
         raise ValueError("Missing cost zone pair")
 
@@ -66,7 +75,7 @@ def air_quote(origin_zip: str, dest_zip: str, billable_lbs: float) -> float:
     base = air_cost.cost_per_lb * billable_lbs
     total = guarantee_cost(cost_zone.minimum_charge, base)
 
-    if dest_zone.is_beyond:
+    if dest_zone.is_beyond and matched_dest_zone:
         beyond = BeyondRate.query.filter_by(zone=dest_zone.dest_zone).first()
         if beyond:
             total += beyond.surcharge
