@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Rate Tables</h1>
+<form method="post" class="row g-3">
+  <div class="col-md-2"><label class="form-label">Type</label><input class="form-control" name="type" placeholder="hotshot"></div>
+  <div class="col-md-2"><label class="form-label">Min miles</label><input class="form-control" name="miles_min"></div>
+  <div class="col-md-2"><label class="form-label">Max miles</label><input class="form-control" name="miles_max"></div>
+  <div class="col-md-2"><label class="form-label">Rate / mile</label><input class="form-control" name="rate_per_mile"></div>
+  <div class="col-md-2"><label class="form-label">Zone</label><input class="form-control" name="zone"></div>
+  <div class="col-md-2"><label class="form-label">Charge</label><input class="form-control" name="surcharge"></div>
+  <div class="col-md-2"><label class="form-label">Cost per lb</label><input class="form-control" name="cost_per_lb"></div>
+  <div class="col-md-2"><label class="form-label">Zipcode</label><input class="form-control" name="zipcode"></div>
+  <div class="col-md-2"><label class="form-label">Dest zone</label><input class="form-control" name="dest_zone"></div>
+  <div class="col-md-2"><label class="form-label">Beyond (0/1)</label><input class="form-control" name="is_beyond"></div>
+  <div class="col-md-2"><label class="form-label">Origin zone</label><input class="form-control" name="origin_zone"></div>
+  <div class="col-md-2"><label class="form-label">Minimum charge</label><input class="form-control" name="minimum_charge"></div>
+  <div class="col-12"><button class="btn btn-primary">Save</button></div>
+</form>
+<hr>
+<h2>Hotshot rates</h2>
+<ul>{% for r in hotshot_rates %}<li>{{ r.miles_min }}-{{ r.miles_max }} @ {{ r.rate_per_mile }}</li>{% else %}<li>None</li>{% endfor %}</ul>
+<h2>Beyond rates</h2>
+<ul>{% for r in beyond_rates %}<li>{{ r.zone }}: {{ r.surcharge }}</li>{% else %}<li>None</li>{% endfor %}</ul>
+<h2>Air cost zones</h2>
+<ul>{% for r in air_cost_zones %}<li>{{ r.zone }}: {{ r.cost_per_lb }}</li>{% else %}<li>None</li>{% endfor %}</ul>
+<h2>ZIP zones</h2>
+<ul>{% for r in zip_zones %}<li>{{ r.zipcode }} -> {{ r.dest_zone }} (beyond={{ r.is_beyond }})</li>{% else %}<li>None</li>{% endfor %}</ul>
+<h2>Cost zones</h2>
+<ul>{% for r in cost_zones %}<li>{{ r.origin_zone }} -> {{ r.dest_zone }} min {{ r.minimum_charge }}</li>{% else %}<li>None</li>{% endfor %}</ul>
+{% endblock %}

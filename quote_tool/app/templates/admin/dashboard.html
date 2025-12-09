@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Admin Dashboard</h1>
+<table class="table">
+  <thead><tr><th>Email</th><th>Admin</th><th>Staff</th><th>Can Send Mail</th></tr></thead>
+  <tbody>
+  {% for u in users %}
+    <tr><td>{{ u.email }}</td><td>{{ u.is_admin }}</td><td>{{ u.is_staff }}</td><td>{{ u.can_send_mail }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
